@@ -1,14 +1,15 @@
 from classes import *
+from pprint import pprint
 
 
 if __name__ == '__main__':
     hh = HH()
-    user_input = input('Введите название вакансии: ')
-    if user_input:
-        hh.get_request(user_input)
-    elif user_input.lower() == 'stop':
+    start_input = input('Введите "1" для запуска: ')
+    if start_input.lower() == 'stop':
         print("Выход!")
         exit()
+    elif start_input == '1':
+        pprint(hh.get_request_company())
     else:
         print("Не верный ввод! Выход!")
         exit()
