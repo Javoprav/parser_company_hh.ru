@@ -120,11 +120,53 @@ class HH:
         conn.commit()
         conn.close()
 
-        #         cur.execute(
-        #             """
-        #             INSERT INTO vacancy (channel_id, company_name, vacancy_name, salary, url)
-        #             VALUES (%s, %s, %s, %s, %s)
-        #             """,
-        #             (channel_id, video_data['title'], video_data['publishedAt'],
-        #              f"https://www.youtube.com/watch?v={video['id']['videoId']}")
-        #         )
+    @staticmethod
+    def save_data_vacancy_to_database(data: list[dict[str, Any]], database_name: str, params: dict):
+        """Сохранение данных о вакансиях в базу данных."""
+        conn = psycopg2.connect(dbname=database_name, **params)
+        with conn.cursor() as cur:
+            for vac in data:
+                salary_vac = None
+                if vac['salary'] == 'Не известно':
+                    salary_vac = 0
+                else:
+                    salary_vac = vac['salary']
+                cur.execute(
+                    """
+                    INSERT INTO vacancy (company_id, company_name, vacancy_name, salary, url)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (vac['company_id'], vac['company_name'], vac['vacancy_name'], salary_vac, vac['url'])
+                )
+        conn.commit()
+        conn.close()
+
+
+class DBManager:
+
+    def __init__(self, database_name, params):
+        self.database_name = database_name
+        self.params = params
+
+    def get_companies_and_vacancies_count(self):
+        """Получает список всех компаний и количество вакансий у каждой компании"""
+        conn = psycopg2.connect(dbname=self.database_name, **self.params)
+        with conn.cursor() as cur:
+            cur.execute("SELECT company_name, count_vac FROM company")
+            rows = cur.fetchall()
+            for row in rows:
+                print(f'Компания - {row[0]}, количество вакансий: {row[1]}')
+        conn.commit()
+        conn.close()
+
+    def get_all_vacancies(self):
+        """Получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на
+        вакансию."""
+        conn = psycopg2.connect(dbname=self.database_name, **self.params)
+        with conn.cursor() as cur:
+            cur.execute("SELECT company_name, vacancy_name, salary, url FROM vacancy")
+            rows = cur.fetchall()
+            for row in rows:
+                print(f'Компания: {row[0]}, названия компании: {row[1]}, зарплата: {row[2]}, Ссылка: {row[3]}')
+        conn.commit()
+        conn.close()
