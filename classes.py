@@ -1,6 +1,7 @@
 import json, requests, os
 from pprint import pprint
 from typing import List, Dict, Any
+from config import config
 
 from config import config
 import psycopg2
@@ -167,6 +168,41 @@ class DBManager:
             cur.execute("SELECT company_name, vacancy_name, salary, url FROM vacancy")
             rows = cur.fetchall()
             for row in rows:
-                print(f'Компания: {row[0]}, названия компании: {row[1]}, зарплата: {row[2]}, Ссылка: {row[3]}')
+                print(f'Компания: {row[0]}, названия вакансии: {row[1]}, зарплата: {row[2]}, Ссылка: {row[3]}')
         conn.commit()
         conn.close()
+
+    def get_avg_salary(self):
+        """Получает среднюю зарплату по вакансиям."""
+        conn = psycopg2.connect(dbname=self.database_name, **self.params)
+        with conn.cursor() as cur:
+            cur.execute("SELECT round(AVG(salary),0) AS avg_salary from vacancy")
+            rows = cur.fetchall()
+            for row in rows:
+                print(f'Средняя зарплата: {row[0]}')
+        conn.commit()
+        conn.close()
+
+    def get_vacancies_with_higher_salary(self):
+        """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям."""
+        conn = psycopg2.connect(dbname=self.database_name, **self.params)
+        with conn.cursor() as cur:
+            cur.execute("SELECT * from vacancy where salary > (SELECT round(AVG(salary),0) AS avg_salary from vacancy)")
+            rows = cur.fetchall()
+            for row in rows:
+                print(f'Компания: {row[1]}, названия вакансии: {row[2]}, зарплата: {row[3]}, Ссылка: {row[4]}')
+        conn.commit()
+        conn.close()
+
+    def get_vacancies_with_keyword(self, word=''):
+        """Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например “python”."""
+        conn = psycopg2.connect(dbname=self.database_name, **self.params)
+        with conn.cursor() as cur:
+            cur.execute("SELECT * from vacancy where salary > (SELECT round(AVG(salary),0) AS avg_salary from vacancy)")
+            rows = cur.fetchall()
+            for row in rows:
+                if word in row[2]:
+                    print(f'Компания: {row[1]}, названия вакансии: {row[2]}, зарплата: {row[3]}, Ссылка: {row[4]}')
+        conn.commit()
+        conn.close()
+
