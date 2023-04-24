@@ -89,7 +89,7 @@ class DBManager:
         res = [ele.replace("\n", '') for ele in sqlCommands]
         conn = psycopg2.connect(dbname=self.database_name, **self.params)
         with conn.cursor() as cur:
-            cur.execute("SELECT * from vacancy where salary > (SELECT round(AVG(salary),0) AS avg_salary from vacancy)")
+            cur.execute(f"{res[3]}")
             rows = cur.fetchall()
             for row in rows:
                 if word in row[2]:
