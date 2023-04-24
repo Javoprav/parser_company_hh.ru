@@ -1,9 +1,5 @@
-import json, requests, os
-from pprint import pprint
-from typing import List, Dict, Any
-from config import config
-
-from config import config
+import requests, json
+from typing import Any
 import psycopg2
 
 
@@ -32,9 +28,6 @@ class HH:
                     'company_name': name_employer,
                     'count_vac': data['found'],
                     'company_id': id_range})
-        with open('employer.json', 'w', encoding='utf8') as f:
-            json.dump(company_dict, f, ensure_ascii=False)
-            f.close()
         return company_dict
 
     @classmethod
@@ -62,9 +55,6 @@ class HH:
                     })
             else:
                 print(f"Ошибка {response.status_code}")
-        with open('vacancy.json', 'w', encoding='utf8') as f:
-            json.dump(vacancy_dict, f, ensure_ascii=False)
-            f.close()
         return vacancy_dict
 
     @staticmethod
@@ -139,70 +129,6 @@ class HH:
                     """,
                     (vac['company_id'], vac['company_name'], vac['vacancy_name'], salary_vac, vac['url'])
                 )
-        conn.commit()
-        conn.close()
-
-
-class DBManager:
-
-    def __init__(self, database_name, params):
-        self.database_name = database_name
-        self.params = params
-
-    def get_companies_and_vacancies_count(self):
-        """Получает список всех компаний и количество вакансий у каждой компании"""
-        conn = psycopg2.connect(dbname=self.database_name, **self.params)
-        with conn.cursor() as cur:
-            cur.execute("SELECT company_name, count_vac FROM company")
-            rows = cur.fetchall()
-            for row in rows:
-                print(f'Компания - {row[0]}, количество вакансий: {row[1]}')
-        conn.commit()
-        conn.close()
-
-    def get_all_vacancies(self):
-        """Получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на
-        вакансию."""
-        conn = psycopg2.connect(dbname=self.database_name, **self.params)
-        with conn.cursor() as cur:
-            cur.execute("SELECT company_name, vacancy_name, salary, url FROM vacancy")
-            rows = cur.fetchall()
-            for row in rows:
-                print(f'Компания: {row[0]}, названия вакансии: {row[1]}, зарплата: {row[2]}, Ссылка: {row[3]}')
-        conn.commit()
-        conn.close()
-
-    def get_avg_salary(self):
-        """Получает среднюю зарплату по вакансиям."""
-        conn = psycopg2.connect(dbname=self.database_name, **self.params)
-        with conn.cursor() as cur:
-            cur.execute("SELECT round(AVG(salary),0) AS avg_salary from vacancy")
-            rows = cur.fetchall()
-            for row in rows:
-                print(f'Средняя зарплата: {row[0]}')
-        conn.commit()
-        conn.close()
-
-    def get_vacancies_with_higher_salary(self):
-        """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям."""
-        conn = psycopg2.connect(dbname=self.database_name, **self.params)
-        with conn.cursor() as cur:
-            cur.execute("SELECT * from vacancy where salary > (SELECT round(AVG(salary),0) AS avg_salary from vacancy)")
-            rows = cur.fetchall()
-            for row in rows:
-                print(f'Компания: {row[1]}, названия вакансии: {row[2]}, зарплата: {row[3]}, Ссылка: {row[4]}')
-        conn.commit()
-        conn.close()
-
-    def get_vacancies_with_keyword(self, word=''):
-        """Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например “python”."""
-        conn = psycopg2.connect(dbname=self.database_name, **self.params)
-        with conn.cursor() as cur:
-            cur.execute("SELECT * from vacancy where salary > (SELECT round(AVG(salary),0) AS avg_salary from vacancy)")
-            rows = cur.fetchall()
-            for row in rows:
-                if word in row[2]:
-                    print(f'Компания: {row[1]}, названия вакансии: {row[2]}, зарплата: {row[3]}, Ссылка: {row[4]}')
         conn.commit()
         conn.close()
 

@@ -1,6 +1,6 @@
 from classes import *
-from pprint import pprint
 from config import config
+from utils.utils import DBManager
 
 if __name__ == '__main__':
     hh = HH()
@@ -17,7 +17,6 @@ if __name__ == '__main__':
         hh.save_data_vacancy_to_database(data_vacancy, 'hh_ru', params)
 
         print("Данные записаны!")
-
         manager = DBManager('hh_ru', params)
         print('Если хотите увидеть список всех компаний'
               ' и количество вакансий у каждой компании введите "2"')
@@ -33,13 +32,13 @@ if __name__ == '__main__':
         if next_input == '2':
             print(manager.get_companies_and_vacancies_count())
         elif next_input == '3':
-            manager.get_all_vacancies()
+            print(manager.get_all_vacancies())
         elif next_input == '4':
-            manager.get_avg_salary()
+            print(manager.get_avg_salary())
         elif next_input == '5':
-            manager.get_vacancies_with_higher_salary()
+            print(manager.get_vacancies_with_higher_salary())
         else:
-            manager.get_vacancies_with_keyword(next_input)
+            print(manager.get_vacancies_with_keyword(next_input))
     else:
         print("Не верный ввод! Выход!")
         exit()
